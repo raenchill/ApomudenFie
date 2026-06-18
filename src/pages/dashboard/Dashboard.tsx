@@ -1,6 +1,7 @@
 import React from 'react';
 import DashboardHeader from '../../components/dashboard/DashboardHeader';
 import DashboardHome from '../../components/dashboard/DashboardHome';
+import PharmacyList from '../../components/dashboard/PharmacyList';
 import DashboardFooter from '../../components/dashboard/DashboardFooter';
 import { Medicine, User } from '../../types';
 
@@ -33,12 +34,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       />
       
       <main>
-        <DashboardHome 
-          user={user}
-          onAddToCart={onAddToCart}
-          searchQuery={searchQuery}
-          onUserUpdate={onUserUpdate}
-        />
+        <PharmacyList />
       </main>
 
       <DashboardFooter />

@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow pharmacies to read/write their own documents and medicines/orders
+    match /pharmacies/{pharmacyId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == pharmacyId;
+    }
+
+    match /users/{userId} {
+      // Allow users to read/write their own user document when authenticated
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /medicines/{medId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.pharmacyId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.pharmacyId == request.auth.uid;
+    }
+
+    match /orders/{orderId} {
+      allow read: if request.auth != null && resource.data.pharmacyId == request.auth.uid;
+      allow create: if true; // allow customers to create
+      allow update: if false;
+    }
+
+    // Default rule
+    match /{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

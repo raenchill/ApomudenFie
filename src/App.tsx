@@ -5,6 +5,10 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+import PharmacyRegister from './pages/pharmacy/PharmacyRegister';
+import PharmacyLogin from './pages/pharmacy/PharmacyLogin';
+import PharmacyDashboard from './pages/pharmacy/PharmacyDashboard';
+import PharmacyDetail from './pages/pharmacy/PharmacyDetail';
 import Dashboard from './pages/dashboard/Dashboard';
 import SymptomChecker from './pages/dashboard/SymptomChecker';
 import Cart from './pages/dashboard/Cart';
@@ -298,6 +302,11 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/warehouse-setup" element={<WarehouseSetup />} />
           <Route path="/warehouse" element={<WarehouseDashboard />} />
+          <Route path="/pharmacy/register" element={<PharmacyRegister />} />
+          <Route path="/pharmacy/login" element={<PharmacyLogin />} />
+          <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
+          <Route path="/pharmacy" element={<Navigate to="/pharmacy/dashboard" replace />} />
+          <Route path="/pharmacy/:id" element={<PharmacyDetail />} />
           <Route 
             path="/settings" 
             element={

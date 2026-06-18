@@ -1,0 +1,15 @@
+{
+  "projectId": "apomudenfie-new",
+  "emulators": {
+    "auth": { "host": "localhost", "port": 9299 },
+    "firestore": { "host": "localhost", "port": 8085 },
+    "storage": { "host": "localhost", "port": 9399 },
+    "ui": { "enabled": true, "host": "localhost", "port": 4010 }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}

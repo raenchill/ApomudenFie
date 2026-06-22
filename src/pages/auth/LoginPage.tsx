@@ -196,7 +196,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               <Pill className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-green-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your Apomudenfie account</p>
+            <p className="text-gray-600">Sign in to your AidFidelis account</p>
           </div>
 
           {/* Error Message */}

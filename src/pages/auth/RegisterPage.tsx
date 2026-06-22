@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Pill, Mail, Lock, User as UserIcon, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Pill, Mail, Lock, User as UserIcon, ArrowLeft, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { User as UserType } from '../../types';
 import { auth, db } from '../../firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -25,6 +25,16 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister }) => {
   const [showSuccess, setShowSuccess] = useState(false);
   const navigate = useNavigate();
 
+  // Automatically clear error pop-up after 4 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError('');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -32,36 +42,36 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister }) => {
     });
   };
 
-  // Firebase Email/Password registration logic
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
+    // Check all required fields first
+    const requiredFields = ['name', 'email', 'password', 'confirmPassword'];
+    for (const field of requiredFields) {
+      if (!formData[field as keyof typeof formData].trim()) {
+        setError('Please fill in all fields before submitting');
+        setIsLoading(false);
+        return;
+      }
+    }
+
     // Validation
     if (!acceptTerms) {
-      setError('Please accept the terms and conditions');
+      setError('Please accept the terms and conditions to proceed');
       setIsLoading(false);
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('The passwords you entered do not match');
       setIsLoading(false);
       return;
     }
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('Your password must be at least 6 characters long');
       setIsLoading(false);
       return;
-    }
-    // Check all required fields
-    const requiredFields = ['name', 'email', 'password', 'confirmPassword'];
-    for (const field of requiredFields) {
-      if (!formData[field as keyof typeof formData].trim()) {
-        setError('Please fill in all fields');
-        setIsLoading(false);
-        return;
-      }
     }
 
     // Firebase registration
@@ -84,53 +94,75 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister }) => {
       
       await setDoc(doc(db, 'users', user.uid), userData);
       
-      // Only call onRegister after successful Firebase registration
       const newUser: UserType = {
         id: user.uid,
         name: formData.name,
         email: formData.email,
         prescriptions: [],
-        isNewUser: true // Mark as new user
+        isNewUser: true
       };
       onRegister(newUser);
       setIsLoading(false);
       setShowSuccess(true);
     } catch (error: any) {
       console.error(error);
-      setError(error.message || 'Registration failed');
       setIsLoading(false);
+      
+      // Check for the specific duplicate email error code from Firebase
+      if (error.code === 'auth/email-already-in-use') {
+        setError('The email has already been used');
+      } else {
+        setError(error.message || 'An unexpected error occurred during registration');
+      }
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative overflow-hidden">
+      
+      {/* Premium Top-Centered Floating Notification */}
+      {error && (
+        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full px-4 animate-slide-down">
+          <div className="bg-white border border-red-200 shadow-xl rounded-xl p-4 flex items-center justify-between gap-3 backend-error-ui">
+            <div className="flex items-center gap-3">
+              <div className="bg-red-50 p-2 rounded-lg text-red-600 flex-shrink-0">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-green-900">Registration Notice</p>
+                <p className="text-xs text-gray-500 mt-0.5">{error}</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setError('')}
+              className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-md w-full">
         {/* Back to Landing */}
         <Link 
           to="/" 
-          className="inline-flex items-center gap-2 text-green-700 hover:text-green-900 mb-8 transition-colors"
+          className="inline-flex items-center gap-2 text-green-700 hover:text-green-900 mb-8 transition-colors text-sm font-medium"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Home
         </Link>
 
         {/* Register Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 animate-fade-in-up transition-all duration-500">
+        <div className="bg-white rounded-2xl shadow-xl p-8 transition-all duration-500">
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="bg-green-700 p-3 rounded-xl inline-block mb-4">
               <Pill className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-green-900 mb-2">Create Account</h1>
-            <p className="text-gray-600">Join MediCare+ for better healthcare</p>
+            <p className="text-gray-600">Join AidFidelis for better healthcare</p>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 animate-shake">
-              {error}
-            </div>
-          )}
 
           {/* Register Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -234,20 +266,20 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister }) => {
               />
               <label htmlFor="terms" className="ml-3 text-sm text-gray-600">
                 I agree to the{' '}
-                <a href="#" className="text-green-600 hover:text-green-700 transition-colors">
+                <a href="#" className="text-green-600 hover:text-green-700 transition-colors underline">
                   Terms of Service
                 </a>{' '}
                 and{' '}
-                <a href="#" className="text-green-600 hover:text-green-700 transition-colors">
+                <a href="#" className="text-green-600 hover:text-green-700 transition-colors underline">
                   Privacy Policy
                 </a>
               </label>
             </div>
 
-              <button
+            <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-green-700 text-white py-3 rounded-lg font-semibold hover:bg-green-800 disabled:bg-green-400 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 disabled:transform-none"
+              className="w-full bg-green-700 text-white py-3 rounded-lg font-semibold hover:bg-green-800 disabled:bg-green-400 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] disabled:transform-none"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -261,7 +293,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister }) => {
           </form>
 
           {/* Sign In Link */}
-          <p className="text-center text-gray-600 mt-8">
+          <p className="text-center text-sm text-gray-600 mt-8">
             Already have an account?{' '}
             <Link to="/login" className="text-green-700 hover:text-green-900 font-semibold transition-colors">
               Sign in here
@@ -270,19 +302,21 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister }) => {
         </div>
 
         {/* Trust Indicators */}
-        <div className="text-center mt-8 text-sm text-gray-500">
-          <p>🔒 Your data is protected with 256-bit SSL encryption</p>
+        <div className="text-center mt-8 text-xs text-gray-400 flex items-center justify-center gap-1.5">
+          <span>Your data is safely protected with industry-standard 256-bit encryption</span>
         </div>
 
         {/* Success Modal */}
         {showSuccess && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 transition-opacity duration-300">
-            <div className="bg-white rounded-2xl shadow-xl p-8 text-center transform transition-all duration-500 scale-90 opacity-0 animate-modal-in">
-              <div className="text-green-600 text-4xl mb-4 animate-bounceIn">✔️</div>
-              <h2 className="text-2xl font-bold mb-2">Account Created!</h2>
-              <p className="text-gray-700 mb-4">Your account was created successfully.</p>
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border border-gray-100 transform transition-all duration-300">
+              <div className="flex justify-center mb-4">
+                <CheckCircle2 className="h-14 w-14 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Created</h2>
+              <p className="text-gray-600 mb-6 text-sm">Your secure healthcare account was created successfully.</p>
               <button
-                className="mt-4 bg-green-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-800 transition-all"
+                className="w-full bg-green-700 text-white py-2.5 rounded-lg font-semibold hover:bg-green-800 transition-all duration-200"
                 onClick={() => {
                   setShowSuccess(false);
                   navigate('/login');

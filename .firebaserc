@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "apomudenfie-new"
+  },
+  "targets": {
+    "apomudenfie-new": {
+      "hosting": {
+        "aidfidelis": [
+          "aidfidelis"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

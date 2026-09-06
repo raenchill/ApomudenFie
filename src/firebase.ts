@@ -8,9 +8,9 @@ import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA0B9GGLGd719hHhy__6WkH0z_5q--xYeg",
-  authDomain: "apomudenfie-new.firebaseapp.com",
+  authDomain: "aidfidelis.web.app",
   projectId: "apomudenfie-new",
-  storageBucket: "apomudenfie-new.appspot.com", // fixed!
+  storageBucket: "apomudenfie-new.appspot.com",
   messagingSenderId: "931827434358",
   appId: "1:931827434358:web:c7c0070c690f8b4a9e7057",
   measurementId: "G-4GNJJDEZZD"

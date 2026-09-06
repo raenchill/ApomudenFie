@@ -1,3 +1,12 @@
+---
+title: AidFidelis Symptom Checker API
+emoji: 🩺
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+---
+
 # Symptom Disease Model
 
 This project classifies symptom descriptions into likely disease labels using a transformer-based text classification model.

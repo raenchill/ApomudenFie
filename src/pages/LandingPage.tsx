@@ -22,6 +22,7 @@ import { collection, getDocs } from 'firebase/firestore';
 const LandingPage: React.FC = () => {
   const [pharmacies, setPharmacies] = useState<any[]>([]);
   const [loadingPharmacies, setLoadingPharmacies] = useState(true);
+  const [featuredIndex, setFeaturedIndex] = useState(0);
 
   useEffect(() => {
     const fetchPharmacies = async () => {
@@ -86,6 +87,22 @@ const LandingPage: React.FC = () => {
   useEffect(() => {
     AOS.init({ duration: 800, once: true, offset: 50 });
   }, []);
+
+  useEffect(() => {
+    if (pharmacies.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setFeaturedIndex((prev) => (prev + 1) % pharmacies.length);
+    }, 4200);
+
+    return () => clearInterval(interval);
+  }, [pharmacies.length]);
+
+  const carouselCards = pharmacies.length > 0 ? [
+    pharmacies[featuredIndex % pharmacies.length],
+    pharmacies[(featuredIndex + 1) % pharmacies.length],
+    pharmacies[(featuredIndex + 2) % pharmacies.length]
+  ] : [];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans scroll-smooth antialiased text-slate-900 overflow-x-hidden">
@@ -331,51 +348,82 @@ const LandingPage: React.FC = () => {
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600"></div>
             </div>
           ) : pharmacies.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-              {pharmacies.map((pharmacy, index) => (
-                <div
-                  key={pharmacy.id}
-                  className="bg-white rounded-3xl border border-slate-200/60 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 overflow-hidden group flex flex-col justify-between"
-                  data-aos="fade-up"
-                  data-aos-delay={index * 100}
-                >
-                  <div className="relative h-48 bg-slate-200 overflow-hidden">
-                    <img
-                      src={pharmacy.image}
-                      alt={pharmacy.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                      onError={(e) => { e.currentTarget.src = 'https://images.pexels.com/photos/3683077/pexels-photo-3683077.jpeg'; }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-violet-700 px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm">
-                      <ShieldCheck className="h-4 w-4" />
-                      Verified
-                    </div>
-                  </div>
-                  <div className="p-6 md:p-8 flex-1 flex flex-col justify-between bg-white relative">
-                    <div className="absolute -top-8 left-6 bg-violet-500 text-white p-2.5 rounded-xl shadow-lg border-2 border-white">
-                      <Store className="h-5 w-5" />
-                    </div>
-                    <div className="pt-4">
-                      <h3 className="font-extrabold text-xl text-slate-900 mb-2 tracking-tight group-hover:text-violet-600 transition-colors line-clamp-1">{pharmacy.name}</h3>
-                      <div className="flex items-center text-slate-500 text-sm mb-5 font-medium gap-1.5">
-                        <MapPin className="h-4 w-4 text-violet-500 shrink-0" />
-                        <span className="line-clamp-1">{pharmacy.location}</span>
-                      </div>
-                      <div className="flex gap-2 mb-6">
-                        <span className="bg-violet-50 text-violet-700 px-2.5 py-1 rounded-lg text-xs font-bold border border-violet-100">{pharmacy.timing}</span>
-                        <span className="bg-slate-50 text-slate-600 px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-200">{pharmacy.riders || 'Delivery'}</span>
-                      </div>
-                    </div>
-                    <Link
-                      to="/register"
-                      className="w-full bg-slate-50 hover:bg-slate-900 text-slate-700 hover:text-white py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm font-bold border border-slate-200 hover:border-slate-800"
+            <div className="relative overflow-hidden">
+              <div className="relative h-[420px] sm:h-[440px]">
+                {carouselCards.map((pharmacy, offset) => {
+                  const isActive = offset === 0;
+                  const isNext = offset === 1;
+
+                  return (
+                    <div
+                      key={`${pharmacy.id}-${offset}`}
+                      className={`absolute inset-x-0 mx-auto top-0 h-full transition-all duration-700 ease-out ${
+                        isActive
+                          ? 'translate-x-0 scale-100 opacity-100 z-30'
+                          : isNext
+                            ? 'translate-x-[56%] scale-[0.94] opacity-80 z-20'
+                            : '-translate-x-[56%] scale-[0.94] opacity-70 z-10'
+                      }`}
+                      style={{ width: 'min(88%, 350px)' }}
                     >
-                      View Full Catalog <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </div>
-              ))}
+                      <div
+                        className="bg-white rounded-3xl border border-slate-200/60 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 overflow-hidden group flex flex-col justify-between h-full"
+                        data-aos="fade-up"
+                        data-aos-delay={offset * 100}
+                      >
+                        <div className="relative h-48 bg-slate-200 overflow-hidden">
+                          <img
+                            src={pharmacy.image}
+                            alt={pharmacy.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                            onError={(e) => { e.currentTarget.src = 'https://images.pexels.com/photos/3683077/pexels-photo-3683077.jpeg'; }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
+                          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-violet-700 px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm">
+                            <ShieldCheck className="h-4 w-4" />
+                            Verified
+                          </div>
+                        </div>
+                        <div className="p-6 md:p-8 flex-1 flex flex-col justify-between bg-white relative">
+                          <div className="absolute -top-8 left-6 bg-violet-500 text-white p-2.5 rounded-xl shadow-lg border-2 border-white">
+                            <Store className="h-5 w-5" />
+                          </div>
+                          <div className="pt-4">
+                            <h3 className="font-extrabold text-xl text-slate-900 mb-2 tracking-tight group-hover:text-violet-600 transition-colors line-clamp-1">{pharmacy.name}</h3>
+                            <div className="flex items-center text-slate-500 text-sm mb-5 font-medium gap-1.5">
+                              <MapPin className="h-4 w-4 text-violet-500 shrink-0" />
+                              <span className="line-clamp-1">{pharmacy.location}</span>
+                            </div>
+                            <div className="flex gap-2 mb-6">
+                              <span className="bg-violet-50 text-violet-700 px-2.5 py-1 rounded-lg text-xs font-bold border border-violet-100">{pharmacy.timing}</span>
+                              <span className="bg-slate-50 text-slate-600 px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-200">{pharmacy.riders || 'Delivery'}</span>
+                            </div>
+                          </div>
+                          <Link
+                            to="/register"
+                            className="w-full bg-slate-50 hover:bg-slate-900 text-slate-700 hover:text-white py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm font-bold border border-slate-200 hover:border-slate-800"
+                          >
+                            View Full Catalog <ChevronRight className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-6 flex items-center justify-center gap-2">
+                {pharmacies.map((pharmacy, index) => (
+                  <button
+                    key={pharmacy.id}
+                    type="button"
+                    aria-label={`View ${pharmacy.name}`}
+                    onClick={() => setFeaturedIndex(index)}
+                    className={`h-2.5 rounded-full transition-all duration-300 ${
+                      index === featuredIndex ? 'w-8 bg-violet-600' : 'w-2.5 bg-slate-300 hover:bg-slate-400'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           ) : (
             <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 max-w-2xl mx-auto">

@@ -1581,7 +1581,7 @@ const DeliveryPage: React.FC<DeliveryPageProps> = ({ user, cartItems = [], total
   const liveAssignedAverage = totalCount > 0 ? parseFloat((totalStars / totalCount).toFixed(1)) : 0;
 
   return (
-    <div className="w-screen h-screen flex bg-white font-sans antialiased overflow-hidden relative">
+    <div className="w-screen min-h-screen flex flex-col bg-white font-sans antialiased overflow-hidden relative md:h-screen md:flex-row">
       
       {/* 2-MINUTE RIDER TIMEOUT POPUP MODAL */}
       {showTimeoutModal && (
@@ -1608,7 +1608,7 @@ const DeliveryPage: React.FC<DeliveryPageProps> = ({ user, cartItems = [], total
       )}
 
       {/* LEFT PANEL SIDEBAR */}
-      <div className="w-full md:w-[440px] h-full bg-white flex flex-col justify-between border-r border-gray-100 z-10 shadow-xl relative shrink-0">
+      <div className="w-full md:w-[440px] h-auto min-h-[52vh] bg-white flex flex-col justify-between border-b border-gray-100 z-10 shadow-xl relative shrink-0 md:h-full md:border-b-0 md:border-r">
         
         <div className="p-5 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
           <div className="flex items-center gap-3">
@@ -2050,7 +2050,7 @@ const DeliveryPage: React.FC<DeliveryPageProps> = ({ user, cartItems = [], total
       </div>
 
       {/* RIGHT FULL SCREEN MAPBOX LIVE MAP */}
-      <div className="flex-1 h-full bg-gray-100 z-0 relative">
+      <div className="relative flex-1 h-[42vh] min-h-[280px] bg-gray-100 z-0 md:h-full">
         <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, TrendingUp, Clock, Store, PackageOpen, ChevronDown, Activity, ArrowRight } from 'lucide-react';
+import { Search, TrendingUp, Clock, Store, PackageOpen, ChevronDown, Activity, ArrowRight, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import MedicineCard from '../MedicineCard';
 import { Medicine, User } from '../../types';
@@ -18,12 +18,34 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ user, onAddToCart, search
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [activePharmacy, setActivePharmacy] = useState<string>('Local Pharmacy Store');
+  const [cartCount, setCartCount] = useState<number>(0);
 
   useEffect(() => {
     const savedPharmacy = localStorage.getItem('selectedPharmacyName');
     if (savedPharmacy) {
       setActivePharmacy(savedPharmacy);
     }
+  }, []);
+
+  useEffect(() => {
+    const updateCartCount = () => {
+      try {
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const total = cart.reduce((sum: number, item: any) => sum + (Number(item.quantity) || 1), 0);
+        setCartCount(total);
+      } catch {
+        setCartCount(0);
+      }
+    };
+
+    updateCartCount();
+    window.addEventListener('storage', updateCartCount);
+    window.addEventListener('cart-update', updateCartCount);
+
+    return () => {
+      window.removeEventListener('storage', updateCartCount);
+      window.removeEventListener('cart-update', updateCartCount);
+    };
   }, []);
 
   useEffect(() => {
@@ -145,6 +167,19 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ user, onAddToCart, search
 
         </div>
       </div>
+
+      <Link
+        to="/cart"
+        className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full bg-violet-600 text-white px-4 py-3 shadow-[0_12px_30px_rgba(124,58,237,0.35)] hover:bg-violet-500 transition-all duration-300"
+      >
+        <ShoppingCart className="h-4 w-4" />
+        <span className="text-sm font-bold">Cart</span>
+        {cartCount > 0 && (
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white text-[10px] font-black text-violet-700 px-1">
+            {cartCount}
+          </span>
+        )}
+      </Link>
 
       {/* CATALOG SECTION */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-20">

@@ -10,7 +10,7 @@ from typing import List, Literal
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 from symptom_disease_model.symptom_checker import (
@@ -61,13 +61,15 @@ app = FastAPI(
 
 
 def configured_cors_origins() -> list[str]:
-    raw_origins = os.getenv(
-        "CORS_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173",
-    )
+    required_origins = [
+        "https://aidfidelis.web.app",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+    configured_origins = os.getenv("CORS_ORIGINS", "")
 
     origins = []
-    for origin in raw_origins.split(","):
+    for origin in [*required_origins, *configured_origins.split(",")]:
         normalized = origin.strip().rstrip("/")
         if normalized and normalized not in origins:
             origins.append(normalized)
@@ -141,7 +143,13 @@ class SymptomCheckRequest(BaseModel):
         max_length=20,
     )
 
-    contraindication_screen_complete: bool = False
+    contraindication_screen_complete: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "contraindication_screen_complete",
+            "contraindication_screen_complet",
+        ),
+    )
 
 
 @app.get("/")

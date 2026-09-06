@@ -9,6 +9,7 @@ from symptom_disease_model.medication_policy import build_medication_guidance
 from symptom_disease_model.triage_questions import (
     assess_symptom_information,
     extract_answer_text,
+    fallback_safety_guidance,
 )
 
 
@@ -597,17 +598,10 @@ def safe_explain(
 
     The user still receives predictions if Gemini is unavailable.
     """
-    fallback_self_care = [
-        "Rest and monitor how your symptoms change.",
-        "Drink fluids if you can do so safely.",
-        "Avoid taking new medicines or changing prescribed treatment without professional advice.",
-        "Arrange medical advice if symptoms persist, worsen, or interfere with normal activities.",
-    ]
-    fallback_red_flags = [
-        "Seek urgent care for difficulty breathing, severe chest pain, fainting, or new confusion.",
-        "Seek urgent care for severe or rapidly worsening symptoms.",
-        "Seek urgent care for uncontrolled bleeding, a seizure, or inability to keep fluids down.",
-    ]
+    fallback_guidance = fallback_safety_guidance()
+    fallback_self_care = fallback_guidance["self_care"]
+    fallback_red_flags = fallback_guidance["red_flags"]
+    fallback_questions = fallback_guidance["follow_up_questions"]
 
     if os.getenv("ENABLE_GEMINI_EXPLANATION", "true").lower() != "true":
         return {
@@ -625,7 +619,7 @@ def safe_explain(
             ],
             "self_care": fallback_self_care,
             "red_flags": fallback_red_flags,
-            "follow_up_questions": [],
+            "follow_up_questions": fallback_questions,
             "recommended_action": (
                 "Use these results as general information and seek "
                 "professional assessment when appropriate."
@@ -661,7 +655,7 @@ def safe_explain(
             ],
             "self_care": fallback_self_care,
             "red_flags": fallback_red_flags,
-            "follow_up_questions": [],
+            "follow_up_questions": fallback_questions,
             "recommended_action": (
                 "Use the predictions only as general guidance and seek "
                 "professional medical assessment if symptoms are severe, "
@@ -681,7 +675,7 @@ def safe_explain(
         "possible_conditions": [],
         "self_care": fallback_self_care,
         "red_flags": fallback_red_flags,
-        "follow_up_questions": [],
+        "follow_up_questions": fallback_questions,
         "recommended_action": (
             "Consider professional medical assessment if symptoms persist "
             "or worsen."

@@ -45,6 +45,51 @@ SAFETY_QUESTIONS = (
 )
 
 
+EMERGENCY_PATTERNS = {
+    "severe breathing difficulty": (
+        "severe difficulty breathing", "cannot breathe", "can't breathe",
+        "struggling to breathe", "gasping for air",
+        "unable to speak because of breathing", "cannot speak because of breathing",
+    ),
+    "concerning chest pain": (
+        "crushing chest pain", "severe chest pain", "heavy chest pressure",
+        "chest pain spreading to my arm", "chest pain spreading to arm",
+        "chest pain spreading to jaw", "chest pain spreading to neck",
+        "chest pain radiating",
+    ),
+    "loss of consciousness or seizure": (
+        "unconscious", "passed out", "fainted", "having a seizure",
+        "having seizures", "severe confusion", "suddenly confused",
+    ),
+    "major bleeding": (
+        "vomiting blood", "coughing up blood", "coughing blood",
+        "heavy bleeding", "bleeding heavily", "black tarry stool",
+        "black tarry stools", "large amount of blood in stool",
+    ),
+    "severe dehydration or persistent vomiting": (
+        "cannot keep fluids down", "can't keep fluids down",
+        "unable to keep fluids down", "persistent vomiting",
+        "vomiting repeatedly", "very little urine", "not urinating",
+    ),
+    "neurologic emergency": (
+        "face drooping", "one side weakness", "one-sided weakness",
+        "cannot move one side", "can't move one side",
+        "sudden slurred speech", "cannot speak properly",
+    ),
+}
+
+
+def fallback_safety_guidance() -> dict[str, list[str]]:
+    return {
+        "self_care": [],
+        "red_flags": [
+            f"Seek urgent care for {warning}."
+            for warning in EMERGENCY_PATTERNS
+        ],
+        "follow_up_questions": list(SAFETY_QUESTIONS),
+    }
+
+
 # Body-system rules. These improve relevance, while UNIVERSAL_QUESTIONS
 # ensure the engine still works for symptoms not listed here.
 SYMPTOM_RULES = (
@@ -475,66 +520,7 @@ def detect_emergency_warning(
     context = build_user_context(symptoms, previous_answers)
     cleaned = remove_common_negative_emergency_phrases(context)
 
-    emergency_patterns = {
-        "severe breathing difficulty": (
-            "severe difficulty breathing",
-            "cannot breathe",
-            "can't breathe",
-            "struggling to breathe",
-            "gasping for air",
-            "unable to speak because of breathing",
-            "cannot speak because of breathing",
-        ),
-        "concerning chest pain": (
-            "crushing chest pain",
-            "severe chest pain",
-            "heavy chest pressure",
-            "chest pain spreading to my arm",
-            "chest pain spreading to arm",
-            "chest pain spreading to jaw",
-            "chest pain spreading to neck",
-            "chest pain radiating",
-        ),
-        "loss of consciousness or seizure": (
-            "unconscious",
-            "passed out",
-            "fainted",
-            "having a seizure",
-            "having seizures",
-            "severe confusion",
-            "suddenly confused",
-        ),
-        "major bleeding": (
-            "vomiting blood",
-            "coughing up blood",
-            "coughing blood",
-            "heavy bleeding",
-            "bleeding heavily",
-            "black tarry stool",
-            "black tarry stools",
-            "large amount of blood in stool",
-        ),
-        "severe dehydration or persistent vomiting": (
-            "cannot keep fluids down",
-            "can't keep fluids down",
-            "unable to keep fluids down",
-            "persistent vomiting",
-            "vomiting repeatedly",
-            "very little urine",
-            "not urinating",
-        ),
-        "neurologic emergency": (
-            "face drooping",
-            "one side weakness",
-            "one-sided weakness",
-            "cannot move one side",
-            "can't move one side",
-            "sudden slurred speech",
-            "cannot speak properly",
-        ),
-    }
-
-    for warning_name, patterns in emergency_patterns.items():
+    for warning_name, patterns in EMERGENCY_PATTERNS.items():
         if contains_any(cleaned, patterns):
             return warning_name
 

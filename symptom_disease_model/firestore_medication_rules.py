@@ -10,6 +10,7 @@ from google.cloud.firestore_v1.base_query import FieldFilter
 
 
 DEFAULT_COLLECTION = "conditionMedicationRules"
+FIRESTORE_LOOKUP_TIMEOUT_SECONDS = 10
 
 
 def normalize_condition(value: str) -> str:
@@ -99,7 +100,7 @@ def get_condition_medication_rule(
                 True,
             )
         )
-        .stream()
+        .stream(timeout=FIRESTORE_LOOKUP_TIMEOUT_SECONDS)
     )
 
     for doc in docs:

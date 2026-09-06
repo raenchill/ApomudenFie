@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from typing import Literal, TypedDict
 
@@ -328,6 +329,26 @@ def build_medication_guidance(
             top_condition=None,
             top_confidence=0.0,
             confidence_margin=0.0,
+        )
+
+    if os.getenv("ENABLE_MEDICATION_RULES", "true").lower() != "true":
+        top_prediction = predictions[0]
+        top_condition = str(top_prediction.get("disease", "")).strip()
+        top_confidence = safe_confidence(top_prediction.get("confidence", 0.0))
+        return make_guidance(
+            eligible=False,
+            guidance_type="professional_care",
+            message=(
+                "Medication guidance is disabled in fast mode. Please seek "
+                "professional advice before taking medicine."
+            ),
+            medicines=[],
+            search_pharmacies=False,
+            requires_prescription=False,
+            requires_pharmacist_review=True,
+            top_condition=top_condition or None,
+            top_confidence=top_confidence,
+            confidence_margin=prediction_margin(predictions),
         )
 
     top_prediction = predictions[0]

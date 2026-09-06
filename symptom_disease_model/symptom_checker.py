@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Callable
 
 from symptom_disease_model.gemini_explainer import explain
@@ -607,6 +608,30 @@ def safe_explain(
         "Seek urgent care for severe or rapidly worsening symptoms.",
         "Seek urgent care for uncontrolled bleeding, a seizure, or inability to keep fluids down.",
     ]
+
+    if os.getenv("ENABLE_GEMINI_EXPLANATION", "true").lower() != "true":
+        return {
+            "summary": (
+                "The classifier produced possible symptom-pattern matches. "
+                "Detailed AI explanation is disabled in fast mode."
+            ),
+            "possible_conditions": [
+                {
+                    "name": str(item.get("disease", "")),
+                    "confidence": float(item.get("confidence", 0.0)),
+                    "reason": "Returned by the trained symptom classifier.",
+                }
+                for item in predictions
+            ],
+            "self_care": fallback_self_care,
+            "red_flags": fallback_red_flags,
+            "follow_up_questions": [],
+            "recommended_action": (
+                "Use these results as general information and seek "
+                "professional assessment when appropriate."
+            ),
+            "disclaimer": "AidFidelis does not provide a medical diagnosis.",
+        }
 
     try:
         result = explain(

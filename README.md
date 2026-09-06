@@ -59,6 +59,16 @@ Verify locally at `http://127.0.0.1:8000/health`. Devices on the same Wi-Fi
 can use `http://YOUR_PC_LAN_IP:8000`, but a deployed frontend cannot call your
 PC's `localhost` or private LAN address.
 
+For a fast presentation or classifier-only test, add these settings to `.env`:
+
+```text
+ENABLE_GEMINI_EXPLANATION=false
+ENABLE_MEDICATION_RULES=false
+```
+
+This returns the DistilBERT predictions and safety guidance without waiting
+for Gemini or Firestore. Set both values back to `true` for the full workflow.
+
 For a deployed frontend, expose the local API through an HTTPS tunnel. For
 example, with Cloudflare Tunnel:
 

@@ -1,0 +1,11 @@
+.git
+.env
+*.json
+__pycache__
+*.pyc
+tests
+training
+data
+improved-model
+*.csv
+*.bin

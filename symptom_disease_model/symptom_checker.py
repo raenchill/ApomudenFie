@@ -596,6 +596,18 @@ def safe_explain(
 
     The user still receives predictions if Gemini is unavailable.
     """
+    fallback_self_care = [
+        "Rest and monitor how your symptoms change.",
+        "Drink fluids if you can do so safely.",
+        "Avoid taking new medicines or changing prescribed treatment without professional advice.",
+        "Arrange medical advice if symptoms persist, worsen, or interfere with normal activities.",
+    ]
+    fallback_red_flags = [
+        "Seek urgent care for difficulty breathing, severe chest pain, fainting, or new confusion.",
+        "Seek urgent care for severe or rapidly worsening symptoms.",
+        "Seek urgent care for uncontrolled bleeding, a seizure, or inability to keep fluids down.",
+    ]
+
     try:
         result = explain(
             symptoms=symptoms,
@@ -622,8 +634,8 @@ def safe_explain(
                 }
                 for item in predictions
             ],
-            "self_care": [],
-            "red_flags": [],
+            "self_care": fallback_self_care,
+            "red_flags": fallback_red_flags,
             "follow_up_questions": [],
             "recommended_action": (
                 "Use the predictions only as general guidance and seek "
@@ -642,8 +654,8 @@ def safe_explain(
             "structured explanation was returned."
         ),
         "possible_conditions": [],
-        "self_care": [],
-        "red_flags": [],
+        "self_care": fallback_self_care,
+        "red_flags": fallback_red_flags,
         "follow_up_questions": [],
         "recommended_action": (
             "Consider professional medical assessment if symptoms persist "

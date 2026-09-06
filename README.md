@@ -38,6 +38,52 @@ This project classifies symptom descriptions into likely disease labels using a 
 
 ## Deploy the API
 
+### Host the model on your own PC
+
+The backend can run on your PC while the frontend is deployed elsewhere.
+From PowerShell, run:
+
+```powershell
+Set-Location "C:\path\to\symptom-disease-model"
+python -m pip install -r requirements.txt
+.\run_backend.ps1
+```
+
+If PowerShell blocks the script, run the command directly:
+
+```powershell
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+Verify locally at `http://127.0.0.1:8000/health`. Devices on the same Wi-Fi
+can use `http://YOUR_PC_LAN_IP:8000`, but a deployed frontend cannot call your
+PC's `localhost` or private LAN address.
+
+For a deployed frontend, expose the local API through an HTTPS tunnel. For
+example, with Cloudflare Tunnel:
+
+```powershell
+cloudflared tunnel --url http://localhost:8000
+```
+
+Or with ngrok:
+
+```powershell
+ngrok http 8000
+```
+
+Put the generated HTTPS origin in your local `.env`:
+
+```text
+CORS_ORIGINS=https://your-frontend.example.com
+```
+
+Then configure the frontend's API base URL to the generated HTTPS tunnel URL,
+for example `https://random-name.trycloudflare.com`. Keep the terminal and
+the tunnel running while users need the AI feature.
+
+### Cloud deployment
+
 The frontend cannot call the Python model directly. Deploy this backend as a
 separate web service, then set the frontend API base URL to the backend URL.
 
